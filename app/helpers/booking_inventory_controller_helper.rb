@@ -1,0 +1,2 @@
+module BookingInventoryControllerHelper
+end

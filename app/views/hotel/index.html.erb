@@ -1,0 +1,29 @@
+<div class="container-fluid" ng-app="app" ng-controller="hotelController" ng-init="initHotel()">
+	<div class="pull-right logout">
+		<a href="../users/sign_out" id="logout-menubar"><i class="fa fa-power-off"></i></a>
+	</div>
+	<div class="clearfix"></div>
+	<div class="container pad0">
+		<div class="header">
+			<h1>Hotel Residency</h1>
+		</div>
+		<div ng-repeat="hotel in hotels">
+			<div class="col-md-3">
+				<div class="hotel-info">
+					<h3>{{hotel.name}}</h3>
+					<p>{{hotel.city}},{{hotel.state}},{{hotel.country}}</p>
+					<p>Website: {{hotel.website}}</p>
+					<p>Contact: {{hotel.phonenumber}}</p>
+					<div class="pull-right">
+					<button class="btn btn-default" ng-attr-id="{{hotel.id}}" ng-click="redirectToBooking($event)">Book now</button>
+					</div>
+					<div class="clearfix"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	var hotel = <%= @hotel.to_json.html_safe %> 
+</script>
+

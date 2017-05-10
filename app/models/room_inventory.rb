@@ -1,0 +1,2 @@
+class RoomInventory < ApplicationRecord
+end
