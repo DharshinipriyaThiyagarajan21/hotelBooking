@@ -1,5 +1,5 @@
-app.controller('bookingController',["$scope","$http", "$filter", "Booking" ,function($scope, $filter, $http ,$window,Booking){
-	$scope.roomtypes = roomtype;
+app.controller('bookingController',["$scope", "$filter","$http", "$window","Booking","RoomInventory", "Room" ,function($scope, $filter, $http ,$window,Booking,RoomInventory,Room){
+	 $scope.roomtypes = roomtype;
 	$scope.rooms = [];
 	$scope.addRooms = [];
 	$scope.checkout;
@@ -7,183 +7,249 @@ app.controller('bookingController',["$scope","$http", "$filter", "Booking" ,func
 	$scope.hotelId;
 	$scope.hotelId = hotel.id;
 	$scope.showCapacity = false;
+	$scope.showCapacityMsg = false;
+	$scope.showCapacityLess = false;
 	$scope.available;
 	$scope.availRoomtype;
-	$scope.roomCapacity = [];
+	$scope.capacity;
+	$scope.save = true;
+
 	
+
+	//To fill checkout date when checkin date is selected
 	$scope.fillCheckout = function() {
 		var checkin = new Date($scope.booking.checkin);
 		$scope.booking.checkout = checkin;
 		$scope.booking.checkout.setDate($scope.booking.checkout.getDate()+1);
 	}
 
-	$scope.saveBooking = function() {
-		console.log($scope.booking);
-		booking = new Booking($scope.booking);
-		booking.save().then(function(response){
-			console.log("success");
-		})
-		// var data = {
-		// 	hotel_id: $scope.hotelId,
-		// 	checkin: $scope.checkin,
-		// 	checkout: $scope.checkout,
-		// 	room_type: $scope.roomtype,
-		// 	rooms_needed: $scope.roomCount			
-		// };
-		
-		// var config = {
-		// 	headers: {
-		// 		'Content-Type': 'application/json'
-		// 	}
-		// };
-
-		// $http.post('/booking/add_booking', data, config).then(function(response) {
-		// 	$scope.updateRoomInventory();
-		// 	$scope.redirectToInvoice();
-		// });
-		// $scope.roomCount = "";
-		// $scope.checkin = "";
-		// $scope.checkout = "";
-		// $scope.roomtype = "";
-		// $scope.showCapacity = false;
-	}
-
+	// Checking availability for no. of rooms available
 	$scope.checkAvailability = function() {
-		$scope.showCapacity = true;
-		//$scope.getAvailableFromRoomInventory();
+		$scope.updateRoomCapacity();
+		$scope.save = true;
 	}
 
-	// $scope.updateRoomInventory = function() {
-	// 	for (var i = 0; i < $scope.roomtypes.length; i++) {
-	// 		if ($scope.roomtype == $scope.roomtypes[i].room_type ) {
-	// 			$scope.available = $scope.roomtypes[i].available;
-	// 		}
-	// 	}
-		
-	// 	$scope.totalAvailable = $scope.available - $scope.roomCount;
-	// 	var data = {
-	// 		hotel_id: $scope.hotelId,
-	// 		checkin: $scope.checkin,
-	// 		checkout: $scope.checkout,
-	// 		room_type: $scope.roomtype,
-	// 	 	available: $scope.available,
-	// 		booked: $scope.roomCount,
-	// 		total_available: $scope.totalAvailable		
-	// 	};
-		
-	// 	var config = {
-	// 		headers: {
-	// 			'Content-Type': 'application/json'
-	// 		}
-	// 	};
+	$scope.capacityMsg = function() {
+		$scope.showCapacityLess = false;
+		$scope.showCapacityMsg = false;
+	}
+	// Get no. of available rooms from room or room inventory
+	$scope.updateRoomCapacity = function() {
+		var count = 0;
+		$scope.bookingBasedOnHotel = 0;
+		Booking.get(function(bookings){
+				for(var b = 0; b < bookings.length; b++) {
+					if(bookings[b].hotel_id == $scope.hotelId && bookings[b].room_type == $scope.booking.roomtype) {
+						count =count+1;
+						$scope.bookingBasedOnHotel = count;
+					}
+						$scope.bookingBasedOnHotel = count;
+				}
+				if($scope.bookingBasedOnHotel == 0) {
+					$scope.updateRoomCapacityFromRoom();
+				}
+				else {
+					$scope.updateRoomCapacityFromRoomInventory();
+				}
+		})
+		//$scope.availablecheck();
+	}
 
-	// 	$http.post('/room_inventory/update_room_inventory', data, config).then(function(response) {
-	// 		console.log("success");
-	// 	});
-	// 	$scope.roomCount = "";
-	// 	$scope.checkin = "";
-	// 	$scope.checkout = "";
-	// 	$scope.roomtype = "";
-	// 	$scope.showCapacity = false;
-	// }
+	// Get no. of available rooms from room
+	$scope.updateRoomCapacityFromRoom = function() {
+		Room.getAvailable(function(available) {
+			$scope.roomCapacity = [];
+			$scope.capacity = 0;
+		var i, a;
+			for(i = 0; i < available.length; i++) {
+				if($scope.hotelId == available[i].hotel_id && $scope.booking.roomtype == available[i].room_type){
+					$scope.capacity = available[i].available; 
+				}
+			}
+			 console.log("available from room ="+$scope.capacity)
+			// for(var m = 1; m <= $scope.capacity; m++) {
+			// 	$scope.roomCapacity.push(m);
+			// }
+			if($scope.capacity < $scope.booking.roomCount) {
+				$scope.showCapacityLess = true;
+			}	
+			else
+			{
+				$scope.save = false;
+			}
+		})
+	}
+
+	$scope.updateRoomCapacityFromRoomInventory = function() {
+		RoomInventory.get(function(available) {
+			$scope.roomCapacity = [];
+			var i, a;
+			$scope.capacity = 0;
+			for(i = 0; i < available.length; i++) {
+				if($scope.hotelId == available[i].hotel_id && $scope.booking.roomtype == available[i].room_type){
+					$scope.capacity = available[i].total_available; 
+				}
+			}
+			console.log("available from room inventory="+$scope.capacity)
+			// if($scope.capacity == 0) {
+			// 	$scope.showCapacityMsg = true;
+			// 	$scope.save = true;
+			// 	$scope.showCapacity = false;
+			// }
+			// else
+			// {
+			// 	for(var m = 1; m <= $scope.capacity; m++) {
+			// 		$scope.roomCapacity.push(m);
+			// 	}
+			
+			if($scope.capacity == 0) {
+				$scope.showCapacityMsg = true;
+				$scope.save = true;
+				$scope.showCapacityLess = false;
+			}
+			else if($scope.capacity < $scope.booking.roomCount) {
+				$scope.showCapacityLess = true;
+			}	
+			else
+			{
+				$scope.save = false;
+			}
+			
+		})
+	}
+
+	$scope.saveBooking = function() {
+		$scope.booking.hotel = $scope.hotelId;
+		console.log($scope.booking.checkin);
+		console.log($scope.booking.checkout);
+		Booking.save($scope.booking, function() {
+			$scope.updateRoomInventory();
+		})
+	}
+
+	$scope.redirectToInvoice = function() {
+		$window.location.href = '/bookings/index';
+	}
+
+	$scope.updateRoomInventory = function() {
+		$scope.totalAvailable = $scope.capacity - $scope.booking.roomCount;
+		var data = {
+			hotel_id: $scope.hotelId,
+			checkin: $scope.booking.checkin,
+			checkout: $scope.booking.checkout,
+			room_type: $scope.booking.roomtype,
+			available: $scope.capacity,
+			booked: $scope.booking.roomCount,
+			total_available: $scope.totalAvailable
+		};
+		
+		RoomInventory.save(data, function() {
+			console.log("updated")
+			$scope.redirectToInvoice();
+		})
+		$scope.booking.roomCount = "";
+		$scope.booking.checkin = "";
+		$scope.booking.checkout = "";
+		$scope.booking.roomtype = "";
+		$scope.showCapacity = false;
+	}
 
 	// $scope.availablecheck = function() {
-	// 	$http.get('/room_inventory/get_room_inventory').then(function(response) {
-	// 		$scope.getAvailable = response.data.get_available;
-	// 		var num,j;
-	// 		for(j = 0; j < $scope.getAvailable.length; j++) {
-	// 			if ($scope.hotelId == $scope.getAvailable[j].hotel_id && $scope.roomtype == $scope.getAvailable[j].room_type) {
-	// 				num = j;
-	// 			}
-	// 		}
-	// 		$scope.inventory_checkin = $scope.getAvailable[num].check_in;
-	// 		$scope.dates = $scope.inventory_checkin.split("-");
+	// 	RoomInventory.get(function(data) {
+	// 		console.log(data[data.length-1]);
+
+	// 		$scope.dates = data[data.length-1].check_in.split("-");
 	// 		$scope.checkin_date = parseInt($scope.dates[2]);
-	// 		if ($scope.checkin.getDate() > $scope.checkin_date){
-	// 			$scope.inventory_available = $scope.getAvailable[num].total_available + 1;
-	// 			console.log($scope.inventory_available);
-	// 		}
-	// 		else {
-	// 			$scope.inventory_available = $scope.getAvailable[num].total_available - 1;
-	// 			console.log("else"+$scope.inventory_available)
-	// 		}
-			
-	// 	});
-
-	// }
-
-	// $scope.getAvailableFromRoomInventory = function() {
-	// 	$http.get('/room_inventory/get_room_inventory').then(function(response) {
-	// 		$scope.getAvailable = response.data.get_available;
-	// 		var num,j;
-	// 		for(j = 0; j < $scope.getAvailable.length; j++) {
-	// 			if ($scope.hotelId == $scope.getAvailable[j].hotel_id && $scope.roomtype == $scope.getAvailable[j].room_type) {
-	// 				num = j;
+	// 		$scope.checkin_day = parseInt($scope.dates[1]);
+	// 		$scope.roomid = data[data.length-1].id;
+	// 		if($scope.booking.checkin.getDate() == $scope.checkin_date) {
+	// 			var total = data[data.length-1].booked + data[data.length-1].total_booked;
+	// 			console.log("booked total"+total)
+	// 			var params = {
+	// 				total_booked: total
 	// 			}
+	// 			RoomInventory.update({id: $scope.roomid},params,function() {
+	// 				console.log("room inventory updated if");
+	// 			})	
 	// 		}
+	// 		else if($scope.booking.checkin.getDate() > $scope.checkin_date) {
+	// 			var total = data[data.length-1].booked + data[data.length-1].total_available;
+	// 			console.log("available total" +total)
 
-	// 		$scope.remainingAvailable = $scope.getAvailable[num].total_available;
-	// 		console.log($scope.remainingAvailable);
-	// 		$scope.availRoomtype = $scope.getAvailable[num].room_type;
-	// 		var data = {
-	// 			available: $scope.remainingAvailable,
-	// 			hotel_id: $scope.hotelId,
-	// 			room_type: $scope.availRoomtype
+	// 			var params = {
+	// 				total_available: total
+	// 			}
+	// 			RoomInventory.update({id: $scope.roomid},params,function() {
+	// 				console.log("room inventory updated else if");
+	// 			})	
 	// 		}
-
-	// 		$scope.updateRoomTable(data);
-	// 	});
+	// 	})
 	// }
 
-	// $scope.updateRoomTable = function(data) {
-	// 	console.log(data);
-	// 	var config = {
-	// 		headers: {
-	// 			'Content-Type': 'application/json'
-	// 		}
-	// 	};
+	
+	$scope.availablecheck = function() {
+		RoomInventory.get(function(available) {
+			$scope.inventory_checkin = [];
+			$scope.bookedList = [];
+			$scope.totalBooked = 0;
+			$scope.newBooked = 0;
+			for(var j = 0; j < available.length; j++) {
+				if(available[j].hotel_id == $scope.hotelId && available[j].room_type == $scope.booking.roomtype) {
+					$scope.totalBooked = $scope.totalBooked + available[j].booked;
+					$scope.dates = available[j].check_in.split("-");
+					$scope.checkin_date = parseInt($scope.dates[2]);
+					$scope.checkin_day = parseInt($scope.dates[1]);		
+					$scope.inventory_checkin.push({"date" : $scope.checkin_date,"month" : $scope.checkin_day});
+					$scope.roomId = available[available.length-1].id;
+					$scope.currentAvailable = available[available.length-1].total_available;
+				}
+			}
+			//console.log("first: "+$scope.totalBooked);
+			//console.log("currentAvailable=" + $scope.currentAvailable)
+			$scope.availability = $scope.currentAvailable + $scope.totalBooked;
+			$scope.bookedCount = 0;
+			for(var i = 0; i < $scope.inventory_checkin.length; i++) {
+				if($scope.inventory_checkin[i].month < ($scope.booking.checkin.getMonth()+1)) {
+					
+					var data = {
+						hotel_id: $scope.hotelId,
+						room_type: $scope.booking.roomtype,
+						booked: $scope.newBooked,
+						total_available: $scope.totalBooked
+					}
 
-	// 	$http.post('/room/update_room_available',data,config).then(function(response) {
-	// 		console.log("updated successfully")
-	// 	});
-	// }
+			
 
-	// $scope.updateRoomCapacity = function() {
-	// 	console.log("inside the update room capacity")
-	// 	var params = {
-	// 			hotel_id: $scope.hotelId
-	// 		}
-	// 	var config = {
-	// 		headers: {
-	// 			'Content-Type': 'application/json'
-	// 		}
-	// 	};
-	// 	console.log(params);
-	// 	$http.get('/room/get_updated_available',params,config).then(function(response) {
-	// 		$scope.updatedAvailable = response.data.updated_capacity;
-	// 	});	
-	// 	var k,n;
-	// 	console.log($scope.updatedAvailable);
-	// 	// for( k = 0; k < $scope.roomtypes.length; k++) {
-	// 	// 	if($scope.hotelId == $scope.updatedAvailable[k].hotel_id && $scope.roomtype == $scope.updatedAvailable[k].room_type) {
-	// 	// 		n = k;
-	// 	// 	}
-	// 	// }
-	// 	// console.log(n);
-	// 	// $scope.selectedAvailable = $scope.updatedAvailable[n].available;
-		
-	// 	// for(var m = 1; m <= $scope.selectedAvailable; m++) {
-	// 	// 	$scope.roomCapacity.push(m);
-	// 	// }
-	// 	// $scope.selectedAvailable="";
-	// }
+					RoomInventory.update({id: $scope.roomId},data,function(data) {
+						console.log("updated successfully")
+					}) 
+				}
+				else if($scope.inventory_checkin[i].date < $scope.booking.checkin.getDate() && $scope.inventory_checkin[i].month <= ($scope.booking.checkin.getMonth()+1) &&available[i].hotel_id == $scope.hotelId && available[i].room_type == $scope.booking.roomtype) {
+						if (available[i].hotel_id == $scope.hotelId && available[i].room_type == $scope.booking.roomtype) {
+							$scope.bookedCount = $scope.bookedCount + available[i].booked;
+						}
+						console.log($scope.bookedCount);
+						console.log($scope.currentAvailable);
+							//console.log("currentAvailable="+$scope.currentAvailable);
+						$scope.avail = $scope.currentAvailable + $scope.bookedCount;
+						console.log("final"+$scope.avail)
+						console.log($scope.newBooked)
+						var data = {
+							hotel_id: $scope.hotelId,
+							room_type: $scope.booking.roomtype,
+							booked: $scope.newBooked,
+							total_available: $scope.avail
+						}
 
-	// $scope.redirectToInvoice = function() {
-	// 	$window.location.href = '/booking/index';
-	// }
-	// // $scope.addRoom = function() {
-	// // 	$scope.rooms.push({"roomtype" : "" , "roomCount" : ""});
-	// // }
+						RoomInventory.update({id: $scope.roomId},data,function() {
+							console.log("available updated");
+						}) 				
+				}
+			}
+			console.log("second: "+$scope.bookedCount);
+		});
+	}
+
 
 }]);
 

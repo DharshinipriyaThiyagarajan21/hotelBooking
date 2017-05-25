@@ -1,6 +1,6 @@
-<div class="container-fluid" ng-app="app" ng-controller="hotelController" ng-init="initHotel()">
-	<div class="pull-right logout">
-		<a href="../users/sign_out" id="logout-menubar"><i class="fa fa-power-off"></i></a>
+<div class="container-fluid"  ng-controller="hotelController" ng-init="initHotel()">
+	<div class="pull-right">
+		<a href="../users/sign_out" id="logout-menubar">Logout</i></a>
 	</div>
 	<div class="clearfix"></div>
 	<div class="container pad0">
@@ -23,7 +23,5 @@
 		</div>
 	</div>
 </div>
-<script type="text/javascript">
-	var hotel = <%= @hotel.to_json.html_safe %> 
-</script>
+
 

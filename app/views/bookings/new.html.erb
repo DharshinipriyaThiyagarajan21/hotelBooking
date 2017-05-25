@@ -1,4 +1,4 @@
-<div class="container-fluid" ng-app="app" ng-controller="bookingController">
+<div class="container-fluid" ng-controller="bookingController" ng-init="initRoomtype()">
 	<div>
 	</div>
 	<div class="container">
@@ -70,20 +70,25 @@
 					</div>
 					<div class="col-md-9 padr">
 						<div class="col-md-3">
-							<select ng-model="booking.roomtype" class="form-control" ng-change="updateRoomCapacity()">
+							<select ng-model="booking.roomtype" class="form-control" ng-change="availablecheck()">
 								<option default value="">Select roomtype</option>
 								<option ng-repeat="roomtype in roomtypes" value="{{roomtype.room_type}}">{{roomtype.room_type}}</option>
 							</select>
 						</div>
-						<div class="col-md-3">
+						
+						<div class="col-md-2" ng-hide="showCapacity">
+							<input type="text" class="form-control" ng-model="booking.roomCount" placeholder="Capacity" ng-change="capacityMsg()"/>
+						</div>
+						<div class="col-md-4">
 							<button class="btn btn-default pull-right" ng-click="checkAvailability()">Check Availability</button>
 						</div>
-						<div class="col-md-3 padr" ng-show="showCapacity">
-							<select class="form-control" ng-model="booking.roomCount">
-								<option default value="">Select Capacity</option>
-								<option ng-repeat="capacity in roomCapacity">{{capacity}}</option>
-							</select>
+						<div class="col-md-3 padr" ng-show="showCapacityLess">
+							only {{capacity}} rooms are available
 						</div>
+						<div class="col-md-3 padr" ng-show="showCapacityMsg">
+							No Rooms Available for this date
+						</div>
+						
 					</div>
 					<div class="clearfix"></div>
 					<br>
@@ -99,10 +104,10 @@
 			</div> -->
 			<div>
 				<div class="col-md-6">
-					<button class="btn btn-default pull-right" onclick="location.href='../hotel/index'">Back</button>
+					<button class="btn btn-default pull-right" onclick="location.href='../hotels/index'">Back</button>
 				</div>
 				<div class="col-md-6">
-					<button class="btn btn-default" ng-click="saveBooking()">Book</button>
+					<button class="btn btn-default" ng-click="saveBooking()" ng-disabled="save">Book</button>
 				</div>
 			</div>
 			

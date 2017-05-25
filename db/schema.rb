@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170509070409) do
+ActiveRecord::Schema.define(version: 20170516094355) do
 
   create_table "bookings", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.integer  "hotel_id"
@@ -18,9 +18,9 @@ ActiveRecord::Schema.define(version: 20170509070409) do
     t.datetime "created_at",   null: false
     t.datetime "updated_at",   null: false
     t.integer  "rooms_needed"
-    t.date     "check_in"
-    t.date     "check_out"
     t.string   "room_type"
+    t.datetime "check_in"
+    t.datetime "check_out"
   end
 
   create_table "hotels", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
@@ -44,6 +44,7 @@ ActiveRecord::Schema.define(version: 20170509070409) do
     t.integer  "total_available"
     t.datetime "created_at",      null: false
     t.datetime "updated_at",      null: false
+    t.integer  "total_booked"
   end
 
   create_table "rooms", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|

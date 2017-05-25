@@ -1,0 +1,62 @@
+<div class="container-fluid" ng-controller="invoiceController">
+	<div class="header">
+		<h1><span class="topic">Invoice</span>
+		<span class="add_book pull-right">
+			<a href="../hotels/index">Add Booking</a>
+		</span>
+		</h1>
+		<div class="clearfix"></div>
+	</div>
+		<div class="container invoiceContainer">
+			<div class="invoice_header">
+				<div class="col-sm-4">
+					<p>Invoice from</p>
+					<h4>{{hotelDetail.name}}</h4>
+					<p>{{hotelDetail.city}},{{hotelDetail.state}},{{hotelDetail.country}}</p>
+					<p>{{hotelDetail.website}}</p>
+					<p>Contact: {{hotelDetail.phonenumber}}</p>
+				</div>
+				<div class="col-sm-offset-2 col-sm-3">
+					<p>Invoice to</p>
+					<h4>{{user.name}}</h4>
+					<p>{{user.city}},{{user.state}},{{user.country}}</p>
+					<p>{{user.email}}</p>
+					<p>Contact: {{user.phone_number}}</p>
+				</div>
+				<div class="col-sm-3 text-right">
+					<p>Invoice No.: #{{bookingDetail.id}}</p>
+					<p>Date: {{date |date : format : shortDate}}</p>
+				</div>
+				<div class="clearfix"></div>
+			</div>	
+			<div class="invoice_table">
+				<table>
+					<tr class="table_head">
+						<th>Check in</th>
+						<th>Check out</th>
+						<th>Room Type</th>
+						<th>Quantity</th>
+						<th>Price per room</th>
+						<th>Total price</th>
+					</tr>
+					<tr>
+						<td>{{bookingDetail.check_in}}</td>
+						<td>{{bookingDetail.check_out}}</td>
+						<td>{{bookingDetail.room_type}}</td>
+						<td>{{bookingDetail.booked}}</td>
+						<td>{{room.price}}</td>
+						<td>{{total}}</td>
+					</tr>
+					<tr>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td>Total to be paid</td>
+						<td>
+						<div class="special">{{total}}</div></td>
+					</tr>
+				</table>
+			</div>
+		</div>
+</div>
